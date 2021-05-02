@@ -2,16 +2,16 @@
 # Programmer: Ciara Patterson
 # Class: CPSC 322-02, Spring 2021
 # Programming Assignment #4
-# 4/14/2021
+# 4/28/2021
 #
-# General utility functions for PA6
+# General utility functions for PA7
 ##############################################
 
 import math
 from tabulate import tabulate
 from collections import Counter
-import numpy as np
-
+import itertools
+import random
 
 def calculate_mean(data):
     '''Calculates the mean of a list of data
@@ -39,38 +39,6 @@ def calculate_slope(x, y):
     m = sum([(x[i] - x_mean)*(y[i] - y_mean) for i in range(len(x))]) / sum([(x[i] - x_mean)**2 for i in range(len(x))])
     b = y_mean - m * x_mean
     return m, b
-
-
-def calculate_correlation(x, y):
-    '''Returns the correlation coefficient or r-value for 2 numerical datasets
-
-    Args:
-        x (list of floats): independent variable
-        y (list of floats): dependent variable
-
-    Returns:
-        r (float): r-value or correlation coefficient
-    '''
-    x_mean = calculate_mean(x)
-    y_mean = calculate_mean(y)
-    numerator = sum([(x[i] - x_mean)*(y[i] - y_mean) for i in range(len(x))])
-    sum_squares_x = sum([(x[i] - x_mean) ** 2 for i in range(len(x))])
-    sum_squares_y = sum([(y[i] - y_mean) ** 2 for i in range(len(y))])
-    r = numerator / math.sqrt(sum_squares_x * sum_squares_y)
-    return r
-
-def calculate_covariance(x, y):
-    '''Calculates the covariance between 2 datasets
-
-    Args:
-        x (list of floats):
-    '''
-    x_mean = calculate_mean(x)
-    y_mean = calculate_mean(y)
-    numerator = sum([(x[i] - x_mean)*(y[i] - y_mean) for i in range(len(x))])
-    cov = numerator / len(x)
-    return cov
-
 
 def flatten_list(nested_list):
     '''Takes a 2D list and return a 1D list with the values in the nested list
@@ -346,3 +314,214 @@ def create_leaf_node(partition, partitions, case):
         total_instances =  len(flatten_list(partitions.values())) # total number of instances
         leaf = ["Leaf", most_common_class, num_instances, total_instances] # create node
     return leaf
+
+def prepend_attribute_label(table, header):
+    '''Prepends attribute labels to each value in the instance
+
+    Args:
+        table (list of list): table of instances
+        header (list of str): attribute names
+    '''
+    for row in table:
+        for i in range(len(row)):
+            row[i] = header[i] + " = " + str(row[i])
+
+def check_row_match(terms, row):
+    '''Checks if the terms are in the row
+
+    Args:
+        terms (list): terms to check for
+        row (list): row in table
+
+    Returns:
+        1 if all the terms in terms are in row, 0 otherwise
+    '''
+    for term in terms:
+        if term not in row:
+            return 0
+    return 1
+
+def compute_rule_counts(rule, table):
+    '''Computes the counts of each rule
+
+    Args:
+        rule (dict): representation of the rule
+        table (list of list): table being mined
+
+    Returns:
+        Nleft (int): count of the left hand side set in the table
+        Nright (int): count of the right hand side set in the table
+        Nboth (int): count of the left and right hand side set in the table
+        Ntotal (int): count of rows in the table
+    '''
+    Nleft = Nright = Nboth = 0 # accumulators
+    Ntotal = len(table)
+    for row in table:
+        # Nleft: is lhs a subset of the row?
+        Nleft += check_row_match(rule["lhs"], row)
+        Nright += check_row_match(rule["rhs"], row)
+        Nboth += check_row_match(rule["lhs"] + rule["rhs"], row)
+
+    return Nleft, Nright, Nboth, Ntotal
+
+def compute_rule_interestingness(rule, table):
+    '''Computes measures of rule interestingness, including support, confidence, and lift
+
+    Args:
+        rule (dict): representation of the rule
+        table (list of list): table being mined
+    '''
+    Nleft, Nright, Nboth, Ntotal = compute_rule_counts(rule, table)
+    rule["confidence"] = Nboth / Nleft
+    rule["support"] = Nboth / Ntotal
+    rule["completeness"] = Nboth / Nright
+    rule['lift'] = get_support(rule['rhs'] + rule['lhs'], table) / (get_support(rule['rhs'], table) * get_support(rule['lhs'], table))
+
+def compute_unique_values(table):
+    '''Computes unique values from the table
+    Args:
+        table (list of list): table being mined
+    '''
+    unique = set()
+    for row in table:
+        for value in row:
+            unique.add(value)
+    return sorted(list(unique))
+
+def all_rows_same_length(table):
+    '''Checks if all rows are the same length
+    Args:
+        table (list of list): table being mined
+    '''
+    row_lens = [len(x) for x in table]
+    if len(list(set(row_lens))) == 1:
+        return True
+    else:
+        return False
+
+def remove_duplicates(nested_list):
+    '''Removes duplicates from a nested list (list of lists or list of sets) '''
+    new_list = []
+    for item in nested_list:
+        if item not in new_list:
+            new_list.append(item)
+    return new_list
+
+def get_union(itemSet, length):
+    '''Gets all unions of sets in the itemset of the specified length '''
+    all_sets = [list(set(i).union(set(j))) for i in itemSet for j in itemSet
+                if len(list(set(i).union(set(j)))) == length]
+    return remove_duplicates(all_sets)
+
+def get_powerset(itemset):
+    '''Returns the powerset of the inputted itemset '''
+    powerset = []
+    for i in range(len(itemset) + 1):
+        powerset.extend([list(x) for x in list(itertools.combinations(itemset, i))])
+    return powerset
+
+def get_support(item_set, table):
+    '''Gets the support of a single set (item_set) in the table '''
+    cnt = 0
+    for row in table:
+        cnt += check_row_match(item_set, row)
+    sup = cnt / len(table)
+    return sup
+
+def get_min_sup(all_sets, table, minsup):
+    '''Returns only sets in all_sets that have a support above the minimum support '''
+    min_sup_sets = []
+    for item_set in all_sets:
+        sup = get_support(item_set, table)
+        if sup >= minsup:
+            min_sup_sets.append(item_set)
+    return min_sup_sets
+
+def pruning(Ck, prev_L, prev_k):
+    '''Removes members of Ck that have a subset of length prev_k that is not in
+    the previous Lk set'''
+    tempCk = Ck.copy()
+    for item in Ck:
+        subsets = [list(x) for x in list(itertools.combinations(item, prev_k))]
+        # print('subsets', subsets)
+        for subset in subsets:
+            # if the subset is not in previous K-frequent get, then remove the set
+            if set(subset) not in [set(x) for x in prev_L]:
+                tempCk.remove(item)
+                break
+    return tempCk
+
+def generate_apriori_rules(table, supported_itemsets, minconf):
+    '''Checks that rules satisfy the minimum confidence '''
+    rules = []
+    # TODO
+    # for each itemset S in supported_itemsets:
+    for itemset in supported_itemsets:
+    # generate all confident rules:
+        possible_rhs = get_powerset(itemset)
+        # start with 1 term RHSs... then 2 term RHS... len(S)-1 term RHS...
+        # all items not in the RHS are in the LHS
+        for rhs in possible_rhs:
+            lhs = [item for item in itemset if item not in rhs]
+            if rhs and lhs: #make sure neither sets are empty
+                rule = {'lhs':lhs, 'rhs':rhs}
+
+                # compute confidence, if confidence >= minconf, add to rules
+                compute_rule_interestingness(rule, table)
+                if rule['confidence'] >= minconf:
+                    rules.append(rule)
+    return remove_duplicates(rules)
+
+def apriori(table, minsup, minconf):
+    '''Apriori algorithm for associative rule generation '''
+    # goal is to return a list of supported and confident rules
+    # TODO
+    L = {} # holds all item sets
+    # supported_itemsets = [] # L2 U ... Lk-2
+    # 1. create L1 the set of supported itemsets of size 1
+    L[1] = [[x] for x in compute_unique_values(table)]
+    # print(L[1])
+    # 2. k = 2
+    k = 2 # cardinality of the itemsets
+
+    # 3. while (Lkminus1 is not empty)
+    while L[k-1]: # empty lists evaluate to None
+        # 4., 5., 6.,...
+        Ck = get_union(L[k-1], k)
+        # print('Ck', Ck)
+        Ck = pruning(Ck, L[k-1], k - 1) # remove all sets from ck with subsets not in the prev L
+        # print('Ck after pruning', Ck)
+        L[k] = get_min_sup(Ck, table, minsup)
+        # print('Lk', L[k])
+        k += 1
+
+    # union of the supported itemsets
+    supported_itemsets = []
+    for i in range(2, k-1):
+        supported_itemsets.extend(L[i])
+    # print('supported sets without duplicate sets', remove_duplicates([set(x) for x in supported_itemsets]))
+    # make sure there are no duplicate sets
+    supported_itemsets = [list(j) for j in remove_duplicates([set(x) for x in supported_itemsets])]
+    # print('supported itemsets', supported_itemsets)
+    rules = generate_apriori_rules(table, supported_itemsets, minconf)
+    return rules
+
+def compute_bootstrapped_sample(X_train, y_train, seed = None):
+    if seed is not None:
+        random.seed(seed)
+    n = len(X_train)
+    X_sample = []
+    y_sample = []
+    for _ in range(n):
+        rand_index = random.randrange(0, n)
+        X_sample.append(X_train[rand_index])
+        y_sample.append(y_train[rand_index])
+    return X_sample, y_sample
+
+
+def compute_random_subset(values, num_values, seed = None):
+    if seed is not None:
+        random.seed(seed)
+    shuffled = values[:] # shallow copy
+    random.shuffle(shuffled)
+    return sorted(shuffled[:num_values])
