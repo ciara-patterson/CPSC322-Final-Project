@@ -13,6 +13,7 @@ from collections import Counter
 import itertools
 import random
 
+
 def calculate_mean(data):
     '''Calculates the mean of a list of data
 
@@ -277,19 +278,19 @@ def partition_instances(instances, split_attribute, attribute_domains, header):
                 partitions[attribute_value].append(instance)
     return partitions
 
-def all_same_class(instances):
-    '''Checks if all the instances belong to the same class
+# def all_same_class(instances):
+#     '''Checks if all the instances belong to the same class
 
-    Returns:
-        True if instances are all the same class
-        False if not
-    '''
-    # assumption: instances is not empty and class label is at index -1
-    first_label = instances[0][-1]
-    for instance in instances:
-        if instance[-1] != first_label:
-            return False
-    return True # if we get here, all instance labels matched the first label
+#     Returns:
+#         True if instances are all the same class
+#         False if not
+#     '''
+#     # assumption: instances is not empty and class label is at index -1
+#     first_label = instances[0][-1]
+#     for instance in instances:
+#         if instance[-1] != first_label:
+#             return False
+#     return True # if we get here, all instance labels matched the first label
 
 def create_leaf_node(partition, partitions, case):
     '''Creates either a regular leaf node (case 1) or a majority leaf node (case 2)
@@ -525,3 +526,67 @@ def compute_random_subset(values, num_values, seed = None):
     shuffled = values[:] # shallow copy
     random.shuffle(shuffled)
     return sorted(shuffled[:num_values])
+
+def calculate_covariance(x, y):
+    '''Calculates the covariance between 2 datasets
+    Args:
+        x (list of floats):
+    '''
+    x_mean = calculate_mean(x)
+    y_mean = calculate_mean(y)
+    numerator = sum([(x[i] - x_mean)*(y[i] - y_mean) for i in range(len(x))])
+    cov = numerator / len(x)
+    return cov
+
+def calculate_correlation(x, y):
+    '''Returns the correlation coefficient or r-value for 2 numerical datasets
+    Args:
+        x (list of floats): independent variable
+        y (list of floats): dependent variable
+    Returns:
+        r (float): r-value or correlation coefficient
+    '''
+    x_mean = calculate_mean(x)
+    y_mean = calculate_mean(y)
+    numerator = sum([(x[i] - x_mean)*(y[i] - y_mean) for i in range(len(x))])
+    sum_squares_x = sum([(x[i] - x_mean) ** 2 for i in range(len(x))])
+    sum_squares_y = sum([(y[i] - y_mean) ** 2 for i in range(len(y))])
+    r = numerator / math.sqrt(sum_squares_x * sum_squares_y)
+    return r
+
+def compute_unique_list(list):
+    '''Computes unique values from the list
+    Args:
+        table (list of list): table being mined
+    '''
+    unique_list = []
+    for value in list:
+        if value not in unique_list:
+            unique_list.append(value)
+    return unique_list
+
+def compute_votes(col_list):
+    """Gets a list of columns and is able to place into bins 
+    # [27.0, 14040.5, 28054.0, 944860.0, 1861666.0]
+    # [min, median(min to median), median, median(median to max), max]
+    Attributes:
+        col_list(list or int): A list of column values
+    Returns: 
+        new_list(list): new list of ratings 
+        
+    """
+    new_list = []
+    for value in col_list:
+        if value >= 1861667.0:
+            new_list.append(6)
+        elif value >= 944861.0:
+            new_list.append(5)
+        elif value >= 28055.0:
+            new_list.append(4)
+        elif value >= 14041:
+            new_list.append(3)
+        elif value >= 27.0: 
+            new_list.append(2)
+        elif value < 27.0:
+            new_list.append(1)
+    return new_list
