@@ -487,7 +487,44 @@ class MyPyTable:
             for i in len(self.data):
                 self.data[i][index] = norm_vals[i]
                 
-    def convert_to_string(column_name):
+    def convert_to_string(self, column_name):
         col_idx = self.column_names.index(column_name)
         for i in range(len(self.data)):
             self.data[i][col_idx] = str(self.data[i][col_idx])
+            
+    def load_from_file_no_encode(self, filename):
+        """Load column names and data from a CSV file.
+
+        Args:
+            filename(str): relative path for the CSV file to open and load the contents of.
+
+        Returns:
+            MyPyTable: return self so the caller can write code like: table = MyPyTable().load_from_file(fname)
+        
+        Notes:
+            Use the csv module.
+            First row of CSV file is assumed to be the header.
+            Calls convert_to_numeric() after load
+        """
+        table = []
+        header = []
+        infile = open(filename, "r")
+        csv_reader = csv.reader(infile, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            rowValues = []
+            if line_count == 0:
+                for value in row:
+                    header.append(value)
+            if line_count != 0:
+                for value in row:
+                    rowValues.append(value)
+                line_count += 1
+                table.append(rowValues)
+            else:
+                line_count += 1
+        infile.close()
+        self.data = table
+        self.convert_to_numeric()
+        self.column_names = header
+        return self 
