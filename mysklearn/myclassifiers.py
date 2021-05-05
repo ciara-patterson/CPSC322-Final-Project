@@ -596,6 +596,7 @@ class MyRandomForestClassifier:
 
         # generate N learners
         for i in range(self.N):
+            
             # create the bootstrap sample
             if self.seed is not None:
                 X_sample, y_sample = myutils.compute_bootstrapped_sample(self.X_train, self.y_train, self.seed)
@@ -606,7 +607,7 @@ class MyRandomForestClassifier:
             # create the validation set
             X_val = [x for x in self.X_train if x not in X_sample]
             y_idxs = [self.X_train.index(x) for x in X_val]
-            y_val = [self.y_train[i] for i in range(len(self.y_train)) if i in y_idxs]
+            y_val = [self.y_train[idx] for idx in y_idxs]
 
             # get only a random subset of attributes for each sample
             values = [i for i in range(len(self.X_train[0]))] # num of items in header
@@ -623,6 +624,7 @@ class MyRandomForestClassifier:
             # get only those attributes from the validation set
             for i in range(len(X_val)):
                 X_val[i] = [X_val[i][j] for j in range(len(X_val[i])) if j in F_attributes]
+
 
             # build a decision tree from the sample
             tree = MyDecisionTreeClassifier()

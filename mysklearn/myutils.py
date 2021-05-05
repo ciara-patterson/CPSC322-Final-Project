@@ -158,8 +158,12 @@ class MinMaxScale:
         # get the maxs and mins for each attribute
         for i in range(len(self.attrs)):
             values = [x[i] for x in self.orig_instances]
-            min_val = min(values)
-            max_val = max(values)
+            if not isinstance(values, int) and not isinstance(values, float):
+                min_val = 'pass'
+                max_val = 'pass'
+            else:
+                min_val = min(values)
+                max_val = max(values)
 
             # save the values in a list that is parallel to attrs
             self.mins.append(min_val)
@@ -172,9 +176,12 @@ class MinMaxScale:
         assert len(new_instances[0]) == len(self.orig_instances[0])
         # now scale each attribute according the min and max values
         for i in range(len(self.attrs)):
-            for j in range(len(new_instances)):
-                normalized_val = (new_instances[j][i] - self.mins[i]) / (self.maxs[i] - self.mins[i])
-                new_instances[j][i] = normalized_val
+            if self.mins[i] == 'pass':
+                continue
+            else:
+                for j in range(len(new_instances)):
+                    normalized_val = (new_instances[j][i] - self.mins[i]) / (self.maxs[i] - self.mins[i])
+                    new_instances[j][i] = normalized_val
 
         return new_instances
 
