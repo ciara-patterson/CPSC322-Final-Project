@@ -12,7 +12,7 @@ app = Flask(__name__)
 def index():
     return "<h1>Welcome to Ciara and Kat's App</h1>", 200
 
-# one for the /predict 
+# one for the /predict
 @app.route("/predict", methods=["GET"])
 def predict():
     infile = open('movies_tree.p', 'rb')
@@ -27,9 +27,8 @@ def predict():
     star = request.args.get('star', '')
     director = request.args.get('director', '')
     writer = request.args.get('writer', '')
-    profitted = request.args.get('profitted','')
-
-    prediction = myb.predict([[budget, votes, genre, rating, score, star, director, writer,profitted]])
+    # profitted = request.args.get('profitted','')
+    prediction = myb.predict([[int(budget), int(votes), genre, rating, int(score), star, director, writer]])
 
     if prediction is not None:
         result = {'prediction': prediction}
@@ -39,9 +38,9 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    
-    # uncomment when done
-    # port = os.environ.get("PORT", 5000)
-    # app.run(debug=False, host="0.0.0.0", port=port) # TODO: set debug to False for production
-    # by default, Flask runs on port 5000
+    # app.run(debug=True)
+
+    uncomment when done
+    port = os.environ.get("PORT", 5000)
+    app.run(debug=False, host="0.0.0.0", port=port) # TODO: set debug to False for production
+    by default, Flask runs on port 5000
