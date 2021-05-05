@@ -8,7 +8,7 @@
 ##############################################
 
 import math
-from tabulate import tabulate
+# from tabulate import tabulate
 from collections import Counter
 import itertools
 import random
@@ -118,22 +118,22 @@ def compute_accuracy(y_pred, y_test, error_rate = False):
         return (len(y_pred) - num_right) / len(y_pred)
     else:
         return num_right / len(y_pred)
-
-def format_confusion_matrix(confusion_matrix, labels):
-    '''Formats a confusion matrix
-
-    Args:
-        confusion_matrix (list of list): confusion matrix
-        labels (list of str): values to predict
-    '''
-    columns = labels + ['Total', 'Recognition (%)']
-    totals = [sum(confusion_matrix[i]) for i in range(len(confusion_matrix))]
-    recognition = [(confusion_matrix[i][i] / totals[i]) * 100 if totals[i] != 0 else 0
-                   for i in range(len(confusion_matrix))]
-    confusion_matrix_format = [[str(labels[i]).ljust(3) + ' | '] + confusion_matrix[i] +
-                               [totals[i], recognition[i]]
-                               for i in range(len(labels))]
-    return tabulate(confusion_matrix_format, headers = columns)
+#
+# def format_confusion_matrix(confusion_matrix, labels):
+#     '''Formats a confusion matrix
+#
+#     Args:
+#         confusion_matrix (list of list): confusion matrix
+#         labels (list of str): values to predict
+#     '''
+#     columns = labels + ['Total', 'Recognition (%)']
+#     totals = [sum(confusion_matrix[i]) for i in range(len(confusion_matrix))]
+#     recognition = [(confusion_matrix[i][i] / totals[i]) * 100 if totals[i] != 0 else 0
+#                    for i in range(len(confusion_matrix))]
+#     confusion_matrix_format = [[str(labels[i]).ljust(3) + ' | '] + confusion_matrix[i] +
+#                                [totals[i], recognition[i]]
+#                                for i in range(len(labels))]
+#     return tabulate(confusion_matrix_format, headers = columns)
 
 
 class MinMaxScale:
@@ -573,14 +573,14 @@ def compute_unique_list(list):
     return unique_list
 
 def compute_votes(col_list):
-    """Gets a list of columns and is able to place into bins 
+    """Gets a list of columns and is able to place into bins
     # [27.0, 14040.5, 28054.0, 944860.0, 1861666.0]
     # [min, median(min to median), median, median(median to max), max]
     Attributes:
         col_list(list or int): A list of column values
-    Returns: 
-        new_list(list): new list of ratings 
-        
+    Returns:
+        new_list(list): new list of ratings
+
     """
     new_list = []
     for value in col_list:
@@ -592,12 +592,12 @@ def compute_votes(col_list):
             new_list.append(4)
         elif value >= 14041:
             new_list.append(3)
-        elif value >= 27.0: 
+        elif value >= 27.0:
             new_list.append(2)
         elif value < 27.0:
             new_list.append(1)
     return new_list
-    
+
 def normalize(self, new_instances):
         '''Normalizes any inputted data that resembles the original instances
             using the min and max values for each attribute
