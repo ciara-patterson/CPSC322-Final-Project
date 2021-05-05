@@ -40,7 +40,7 @@ def predict():
 if __name__ == "__main__":
     # app.run(debug=True)
 
-    uncomment when done
+    # uncomment when done
     port = os.environ.get("PORT", 5000)
-    app.run(debug=False, host="0.0.0.0", port=port) # TODO: set debug to False for production
-    by default, Flask runs on port 5000
+    app.run(debug=False, host="0.0.0.0", port = port) # TODO: set debug to False for production
+    # by default, Flask runs on port 5000
