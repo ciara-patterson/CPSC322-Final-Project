@@ -565,7 +565,7 @@ class MyRandomForestClassifier:
         Loosely based on sklearn's DecisionTreeClassifier: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
         Terminology: instance = sample = row and attribute = feature = column
     """
-    def __init__(self, N, M, F, seed):
+    def __init__(self, N, M, F, seed = None):
         """Initializer for MyRandomForestClassifier.
 
         """
@@ -574,7 +574,7 @@ class MyRandomForestClassifier:
         self.N = N
         self.M = M
         self.F = F
-        self.seed = None
+        self.seed = seed
         self.learners = None
         self.accuracies = 0
 
@@ -596,10 +596,12 @@ class MyRandomForestClassifier:
 
         # generate N learners
         for i in range(self.N):
-            
+
             # create the bootstrap sample
             if self.seed is not None:
                 X_sample, y_sample = myutils.compute_bootstrapped_sample(self.X_train, self.y_train, self.seed)
+                self.seed += 1 # increment the seed so not all the trees are the same
+
             else:
                 X_sample, y_sample = myutils.compute_bootstrapped_sample(self.X_train, self.y_train)
 
@@ -614,6 +616,8 @@ class MyRandomForestClassifier:
 
             if self.seed is not None:
                 F_attributes = myutils.compute_random_subset(values, self.F, self.seed)
+                self.seed += 1 # increment the seed so not all the trees are the same
+
             else:
                 F_attributes = myutils.compute_random_subset(values, self.F)
 
