@@ -597,3 +597,16 @@ def compute_votes(col_list):
         elif value < 27.0:
             new_list.append(1)
     return new_list
+    
+def normalize(self, new_instances):
+        '''Normalizes any inputted data that resembles the original instances
+            using the min and max values for each attribute
+        '''
+        assert len(new_instances[0]) == len(self.orig_instances[0])
+        # now scale each attribute according the min and max values
+        for i in range(len(self.attrs)):
+            for j in range(len(new_instances)):
+                normalized_val = (new_instances[j][i] - self.mins[i]) / (self.maxs[i] - self.mins[i])
+                new_instances[j][i] = normalized_val
+
+        return new_instances
