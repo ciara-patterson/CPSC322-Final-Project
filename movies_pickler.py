@@ -20,7 +20,7 @@ kn_class = MyKNeighborsClassifier()
 feature_cols = ['budget', 'votes', 'genre', 'rating', 'score', 'star', 'director', 'writer']
 features = movies_table.get_key_columns(feature_cols)
 outcomes = profitted
-kn_class.fit(features, outcomes
+kn_class.fit(features, outcomes)
 
 packaged_object = kn_class
 
