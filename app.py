@@ -27,8 +27,12 @@ def predict():
     star = request.args.get('star', '')
     director = request.args.get('director', '')
     writer = request.args.get('writer', '')
-    # profitted = request.args.get('profitted','')
-    prediction = myb.predict([[int(budget), int(votes), genre, rating, int(score), star, director, writer]])
+
+    # if any value in this list is empty, the app returns an error
+    if '' in [budget, votes, genre, rating, score, star, director, writer]:
+        prediction = None
+    else:
+        prediction = myb.predict([[int(budget), int(votes), genre, rating, int(score), star, director, writer]])
 
     if prediction is not None:
         result = {'prediction': prediction}
@@ -40,7 +44,7 @@ def predict():
 if __name__ == "__main__":
     # app.run(debug=True)
 
-    uncomment when done
+    # uncomment when done
     port = os.environ.get("PORT", 5000)
-    app.run(debug=False, host="0.0.0.0", port=port) # TODO: set debug to False for production
-    by default, Flask runs on port 5000
+    app.run(debug=False, host="0.0.0.0", port = port) # TODO: set debug to False for production
+    # by default, Flask runs on port 5000
